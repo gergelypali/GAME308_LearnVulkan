@@ -1,8 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>  
-#include <crtdbg.h>
 #include <string>
 #include "SceneManager.h"
 #include "Debug.h"
@@ -42,7 +40,6 @@ int main(int argc, char* args[]) {
 	} 
 	delete gsm;
 	
-	_CrtDumpMemoryLeaks();
 	std::cout << total << std::endl;
 	exit(0);
 

@@ -2,10 +2,11 @@
 #define DEVICE_HANDLER_H
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_beta.h>
 #include <vector>
 #include <SDL.h>
 #include <iostream>
-#include "structs.h"
+#include "Structs.h"
 
 class DeviceHandler
 {
@@ -28,7 +29,8 @@ private:
 	};
 
 	const std::vector<const char*> m_deviceExtensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 	};
 
 	bool checkValidationLayerSupport();

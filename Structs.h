@@ -27,24 +27,60 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct CameraUBO {
+struct uboBuildData
+{
+    uint32_t binding;
+    uint32_t descriptorCount;
+    VkDescriptorType descriptorType;
+    VkShaderStageFlags shaderFlags;
+    uint32_t poolDescriptorCount;
+    VkDeviceSize bufferOffset;
+    VkDeviceSize bufferRange;
+};
+
+struct lightPushC
+{
+    Vec4 color;
+};
+
+struct modelUboData
+{
+    Vec4 lightPos[3];
+    Vec4 lightColor[3];
+    Matrix4 viewMatrix;
+    Matrix4 projectionMatrix;
+    Matrix4 modelMatrix;
+    Matrix4 modelNormalMatrix;
+};
+
+struct pointLightUboData
+{
+	Vec4 position;
+    Matrix4 cameraView;
+    Matrix4 cameraProjection;
+};
+
+struct CameraUBO
+{
     Matrix4 view;
     Matrix4 projection;
 };
 
-struct GlobalLightingUBO {
+struct GlobalLightingUBO
+{
     Vec4 position;
     Vec4 diffuse;
 };
 
-struct ModelUBO {
+struct ModelUBO
+{
     Matrix4 modelMatrix;
     Matrix4 normalMatrix;
 };
 
 struct Vertex {
-    Vec4 pos;
-    Vec4 normal;
+    Vec3 pos;
+    Vec3 normal;
     Vec2 texCoord;
 
     static VkVertexInputBindingDescription getBindingDescription() {

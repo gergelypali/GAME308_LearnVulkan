@@ -1,179 +1,90 @@
 #include "PointLight.h"
-#include <iostream>
-#include <fstream>
+#include "VulkanRenderer.h"
 
-PointLight::PointLight(
-    VkDevice device,
-    VkRenderPass renderpass,
-    VkDescriptorSetLayout layout
-) :
-    m_logicalDevice(device),
-    m_renderPass(renderpass),
-    m_descriptorSetLayout(layout)
+using namespace MATH;
+
+void PointLight::OnCreate()
 {
-    createGraphicsPipeline();
+    printf("PointLightOnCreate1\n");
+
+    uboBuildData first;
+    first.binding = 0;
+    first.descriptorCount = 1;
+    first.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    first.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    first.bufferOffset = 0;
+    first.bufferRange = sizeof(pointLightUboData);
+    first.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
+    //addUniformBufferBuildData(first);
+
+    printf("PointLightOnCreate2\n");
+    uboBuildData second;
+    second.binding = 1;
+    second.descriptorCount = 1;
+    second.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    second.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    second.bufferOffset = m_renderer->uboOffsetPadding(sizeof(pointLightUboData));
+    second.bufferRange = sizeof(CameraUBO);
+    second.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
+    //addUniformBufferBuildData(second);
+    printf("PointLightOnCreate3\n");
+
+    uboBuildData third;
+    third.binding = 0;
+    third.descriptorCount = 1;
+    third.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    third.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    third.bufferOffset = 0;
+    third.bufferRange = sizeof(pointLightUboData);
+    third.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
+    addUniformBufferBuildData(third);
+
+    m_isPushConstantUsed = true;
+
+    VulkanRenderableObject::OnCreate();
+    printf("PointLightOnCreate4\n");
 }
 
-void PointLight::createGraphicsPipeline()
+void PointLight::Update(const MATH::Vec4& newPos, const MATH::Matrix4& view, const MATH::Matrix4& projection)
 {
-    auto vertShaderCode = readFile(m_vertFilePath);
-    auto fragShaderCode = readFile(m_fragFilePath);
+    lightUbo.position = newPos;
+    lightUbo.cameraProjection = projection;
+    lightUbo.cameraView = view;
+    /*
+    std::cout << "viewbol posX " << view[0] << std::endl;
+    std::cout << "viewbol posY " << view[1] << std::endl;
+    std::cout << "viewbol posZ " << view[2] << std::endl;
+    std::cout << "viewbol colorX " << view[4] << std::endl;
+    std::cout << "viewbol colorY " << view[5] << std::endl;
+    std::cout << "viewbol colorZ " << view[6] << std::endl;
+    */
+    m_renderer->updateUniformBuffer(
+        &lightUbo,
+        m_uniformBufferMemoryMap,
+        m_uboBuildData[0].bufferOffset,
+        m_uboBuildData[0].bufferRange
+    );
 
-    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule;
-    vertShaderStageInfo.pName = "main";
-
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule;
-    fragShaderStageInfo.pName = "main";
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-
-    VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-    inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-    std::vector<VkDynamicState> dynamicStates = {
-    VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
-    };
-
-    VkPipelineDynamicStateCreateInfo dynamicState{};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates = dynamicStates.data();
-
-    VkPipelineViewportStateCreateInfo viewportState{};
-    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.scissorCount = 1;
-
-    VkPipelineRasterizationStateCreateInfo rasterizer{};
-    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    rasterizer.depthBiasEnable = VK_FALSE;
-
-    VkPipelineMultisampleStateCreateInfo multisampling{};
-    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-    VkPipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.stencilTestEnable = VK_FALSE;
-
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = 1;
-    colorBlending.pAttachments = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = 0.0f;
-    colorBlending.blendConstants[1] = 0.0f;
-    colorBlending.blendConstants[2] = 0.0f;
-    colorBlending.blendConstants[3] = 0.0f;
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &m_descriptorSetLayout;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-    if (vkCreatePipelineLayout(m_logicalDevice, &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
-
-    VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
-    pipelineInfo.pInputAssemblyState = &inputAssembly;
-    pipelineInfo.pViewportState = &viewportState;
-    pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.pRasterizationState = &rasterizer;
-    pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pDepthStencilState = &depthStencil;
-    pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = m_renderPass;
-    pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-    if (vkCreateGraphicsPipelines(m_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
-
-    vkDestroyShaderModule(m_logicalDevice, fragShaderModule, nullptr);
-    vkDestroyShaderModule(m_logicalDevice, vertShaderModule, nullptr);
+    /*
+    m_renderer->updateUniformBuffer(
+        &lightUbo,
+        m_uniformBufferMemoryMap,
+        m_uboBuildData[0].bufferOffset,
+        m_uboBuildData[0].bufferRange
+    );
+    m_renderer->updateUniformBuffer(
+        &cameraUbo,
+        m_uniformBufferMemoryMap,
+        m_uboBuildData[1].bufferOffset,
+        m_uboBuildData[1].bufferRange
+    );
+    */
 }
 
-std::vector<char> PointLight::readFile(const std::string& filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
-    }
-
-    size_t fileSize = (size_t)file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
-}
-
-VkShaderModule PointLight::createShaderModule(const std::vector<char>& code) {
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(m_logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create shader module!");
-    }
-
-    return shaderModule;
-}
-
-void PointLight::Update(float deltaTime)
-{
-}
-
-void PointLight::UpdateCommandBuffer(VkCommandBuffer buffer, VkDescriptorSet set)
+void PointLight::updateCommandBuffer(VkCommandBuffer& buffer, int& idx)
 {
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &set, 0, nullptr);
+    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[idx], 0, nullptr);
+    vkCmdPushConstants(buffer, m_pipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(lightPushC), &lightConstant);
     vkCmdDraw(buffer, 6, 1, 0, 0);
 }

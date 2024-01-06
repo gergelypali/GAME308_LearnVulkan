@@ -1,42 +1,25 @@
 #ifndef POINT_LIGHT_H
 #define POINT_LIGHT_H
 
-#include <vulkan/vulkan.h>
-#include <vector>
-#include <string>
-#include "Vector.h"
+#include "VulkanRenderableObject.h"
 
-class PointLight
+class PointLight : public VulkanRenderableObject
 {
 private:
-	const std::string m_vertFilePath{"shaders/lightPoint_vert.spv"};
-	const std::string m_fragFilePath{"shaders/lightPoint_frag.spv"};
-
-	// local
-	VkPipeline m_graphicsPipeline;
-	VkPipelineLayout m_pipelineLayout;
-
-	// from device/engine
-	VkDevice m_logicalDevice;
-	VkRenderPass m_renderPass;
-	VkDescriptorSetLayout m_descriptorSetLayout;
-
-	// helpers
-	std::vector<char> readFile(const std::string& filename);
-	VkShaderModule createShaderModule(const std::vector<char>& code);
-
-	void createGraphicsPipeline();
+    pointLightUboData lightUbo;
+    lightPushC lightConstant;
 
 public:
-	PointLight(VkDevice device, VkRenderPass renderpass, VkDescriptorSetLayout layout);
+    PointLight(
+        VulkanRenderer* renderer
+    ) :
+    VulkanRenderableObject(renderer, "shaders/lightPoint_vert.spv", "shaders/lightPoint_frag.spv") {};
+    void OnCreate();
+    void Update(const MATH::Vec4& newPos, const MATH::Matrix4& view, const MATH::Matrix4& projection);
+    void updateCommandBuffer(VkCommandBuffer& buffer, int& idx) override;
 
-	void Update(float deltaTime);
-	void Render() {};
+    inline void setColor(const Vec4& newcolor) { lightConstant.color = newcolor; };
 
-	void UpdateCommandBuffer(VkCommandBuffer buffer, VkDescriptorSet set);
-
-	// getters
-	inline VkPipeline getPipeline() { return m_graphicsPipeline; };
 };
 
 #endif // !POINT_LIGHT_H

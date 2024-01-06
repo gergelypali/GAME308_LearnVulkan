@@ -1,5 +1,6 @@
 #ifndef VULKANRENDERER_H 
 #define VULKANRENDERER_H
+#define VK_ENABLE_BETA_EXTENSIONS
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -64,7 +65,123 @@ public:
     void CreateTextureImage();
     void CreateGraphicsPipeline();
 
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkDeviceSize& offset);
+
     std::unique_ptr<PointLight> light1{ nullptr };
+
+    // we need these functions to be public for the "actor" classes
+    inline uint32_t getSwapChainimagesSize() { return static_cast<uint32_t>(swapChainImages.size()); };
+    inline VkSampler getImageSampler() { return textureSampler; };
+    VkDescriptorImageInfo getImageInfoDescriptor();
+
+    size_t uboOffsetPadding(size_t offset);
+    size_t vertexStridePadding(size_t offset);
+    uint32_t m_imageIndex{0};
+
+    void CreateGraphicsPipeline(
+        const std::string& vertFilePath,
+        const std::string& fragFilePath,
+        VkDescriptorSetLayout& descriptorSetLayout,
+        VkPipelineLayout& pipelineLayout,
+        VkPipeline& graphicsPipeline,
+        bool isVertexed,
+        bool isPushConstantUsed,
+        bool withGeometryShader,
+        const std::string& geomtFilePath
+    );
+    void createDescriptorSetLayout(
+        VkDescriptorSetLayout& descriptorSetLayout,
+        std::vector<VkDescriptorSetLayoutBinding>& bindings
+    );
+    void createDescriptorPool(
+        VkDescriptorPool& descriptorPool,
+        std::vector<VkDescriptorPoolSize>& poolSizes
+    );
+    void createUniformBuffers(
+        VkDeviceSize& sizeOfBuffer,
+        std::vector<VkBuffer>& uniformBuffers,
+        std::vector<VkDeviceMemory>& uniformBuffersMemory,
+        std::vector<void*>& uniformBufferMemoryMap
+    );
+    void createDescriptorSets(
+        VkDescriptorSetLayout& descriptorSetLayout,
+        VkDescriptorPool& descriptorPool,
+        std::vector<VkDescriptorSet>& descriptorSets
+    );
+    void updateDescriptorSets(
+        std::vector<VkWriteDescriptorSet>& descriptorWrites
+    );
+    void cleanupDescriptorSetLayout(VkDescriptorSetLayout& layout);
+    void cleanupPipeline(VkPipeline& pipeline);
+    void cleanupDescriptorPool(VkDescriptorPool& pool);
+    void cleanupBuffer(VkBuffer& buffer);
+    void cleanupMemory(VkDeviceMemory& memory);
+    void cleanupCommandBuffer(std::vector<VkCommandBuffer>& cmdBuffer);
+
+    void mapMemory(
+        std::vector<void*>& memoryMap,
+        std::vector<VkDeviceMemory>& memory
+    )
+    {
+        for (int i = 0; i < memory.size(); i++)
+        {
+            void* data;
+            vkMapMemory(device, memory[i], 0, VK_WHOLE_SIZE, 0, &data);
+            memoryMap.push_back(data);
+        }
+    }
+
+    void updateUniformBuffer(
+        void* ubos,
+        std::vector<void*>& memoryMap,
+        VkDeviceSize offset,
+        VkDeviceSize size
+    )
+    {
+        char *pos = (char*) memoryMap[m_imageIndex];
+        pos += (size_t)offset;
+        memcpy(pos, ubos, (size_t)size);
+    };
+
+    void CreateTextureImageAndView(
+    const char* textureName,
+    VkImage& textureImage,
+    VkDeviceMemory& textureBufferMemory,
+    VkImageView& textureView
+    );
+
+template <typename T>
+void createBufferForModel(
+    const std::vector<T>& modelData,
+    VkBuffer& modelBuffer,
+    VkDeviceMemory& modelBufferMemory,
+    VkBufferUsageFlags flags
+    ) {
+    VkDeviceSize bufferSize = sizeof(modelData[0]) * modelData.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+                                                                                                                       // these are being pulled in by reference, be constatant
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, modelData.data(), (size_t)bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(bufferSize, flags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelBuffer, modelBufferMemory);
+
+    copyBuffer(stagingBuffer, modelBuffer, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+    void createCommandBuffers();
+    void createSecondaryCommandBuffersStart(std::vector<VkCommandBuffer>& cmdBuffer);
+    void createSecondaryCommandBuffersFinish(std::vector<VkCommandBuffer>& cmdBuffer);
+    void addCommandToCommandBuffer(std::vector<VkCommandBuffer>& newBuffer);
 
 private:
     const size_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -89,6 +206,8 @@ private:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
+    VkPhysicalDeviceProperties m_physicalDeviceProperties{};
+
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
@@ -103,6 +222,7 @@ private:
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<VkCommandBuffer> commandBuffers;
+    std::vector<std::vector<VkCommandBuffer>> m_commandBuffers;
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
@@ -141,10 +261,7 @@ private:
     void createUniformBuffers();
     void createDescriptorPool();
     void createDescriptorSets();
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    void createCommandBuffers();
-    void recreateCommandBuffer(const uint32_t& imageIndex);
     void createSyncObjects();
     void cleanup();
     void cleanupSwapChain();
@@ -176,13 +293,13 @@ private:
     GlobalLightingUBO globalLightingUbo;
     ModelUBO marioModelUbo;
 
-    VkShaderModule createShaderModule(const std::vector<char>& code);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-
     static std::vector<char> readFile(const std::string& filename);
+    VkShaderModule createShaderModule(const std::vector<char>& code);
+
 };
 #endif 
 
