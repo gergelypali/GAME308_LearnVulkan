@@ -1,11 +1,6 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-//layout(binding = 1) uniform GlobalLightingUBO {
-//    vec4 position;
-//    vec4 diffuse;
-//} glights;
-
 layout(binding = 0) uniform name
 {
     vec4 lightPosition[3];
@@ -56,7 +51,5 @@ void main() {
 		fragColor +=  kd * lambertian * diffuseColor + ks * specular * specularColor;
 	}
 	// end of for cycle
-
-	//fragColor = ka * ambientColor + kd * lambertian * diffuseColor + ks * specular * specularColor;
 } 
 

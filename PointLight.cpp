@@ -15,7 +15,6 @@ void PointLight::OnCreate()
     first.bufferOffset = 0;
     first.bufferRange = sizeof(pointLightUboData);
     first.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    //addUniformBufferBuildData(first);
 
     printf("PointLightOnCreate2\n");
     uboBuildData second;
@@ -26,7 +25,6 @@ void PointLight::OnCreate()
     second.bufferOffset = m_renderer->uboOffsetPadding(sizeof(pointLightUboData));
     second.bufferRange = sizeof(CameraUBO);
     second.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    //addUniformBufferBuildData(second);
     printf("PointLightOnCreate3\n");
 
     uboBuildData third;
@@ -50,35 +48,13 @@ void PointLight::Update(const MATH::Vec4& newPos, const MATH::Matrix4& view, con
     lightUbo.position = newPos;
     lightUbo.cameraProjection = projection;
     lightUbo.cameraView = view;
-    /*
-    std::cout << "viewbol posX " << view[0] << std::endl;
-    std::cout << "viewbol posY " << view[1] << std::endl;
-    std::cout << "viewbol posZ " << view[2] << std::endl;
-    std::cout << "viewbol colorX " << view[4] << std::endl;
-    std::cout << "viewbol colorY " << view[5] << std::endl;
-    std::cout << "viewbol colorZ " << view[6] << std::endl;
-    */
-    m_renderer->updateUniformBuffer(
-        &lightUbo,
-        m_uniformBufferMemoryMap,
-        m_uboBuildData[0].bufferOffset,
-        m_uboBuildData[0].bufferRange
-    );
 
-    /*
     m_renderer->updateUniformBuffer(
         &lightUbo,
         m_uniformBufferMemoryMap,
         m_uboBuildData[0].bufferOffset,
         m_uboBuildData[0].bufferRange
     );
-    m_renderer->updateUniformBuffer(
-        &cameraUbo,
-        m_uniformBufferMemoryMap,
-        m_uboBuildData[1].bufferOffset,
-        m_uboBuildData[1].bufferRange
-    );
-    */
 }
 
 void PointLight::updateCommandBuffer(VkCommandBuffer& buffer, int& idx)

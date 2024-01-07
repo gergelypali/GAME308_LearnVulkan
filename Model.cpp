@@ -68,48 +68,6 @@ void Model::OnCreate()
     sampler.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
     addUniformBufferBuildData(sampler);
 
-    /*
-    uboBuildData camera;
-    camera.binding = 0;
-    camera.descriptorCount = 1;
-    camera.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    camera.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    camera.bufferOffset = 0;
-    camera.bufferRange = sizeof(CameraUBO);
-    camera.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    addUniformBufferBuildData(camera);
-
-    uboBuildData lights;
-    lights.binding = 1;
-    lights.descriptorCount = 1;
-    lights.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    lights.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    lights.bufferOffset = m_renderer->uboOffsetPadding(sizeof(CameraUBO));
-    lights.bufferRange = sizeof(GlobalLightingUBO);
-    lights.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    addUniformBufferBuildData(lights);
-
-    uboBuildData sampler;
-    sampler.binding = 2;
-    sampler.descriptorCount = 1;
-    sampler.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    sampler.shaderFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    sampler.bufferRange = 0;
-    sampler.bufferOffset = 0;
-    sampler.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    addUniformBufferBuildData(sampler);
-
-    uboBuildData model;
-    model.binding = 3;
-    model.descriptorCount = 1;
-    model.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    model.shaderFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    model.bufferOffset = m_renderer->uboOffsetPadding(sizeof(CameraUBO) + sizeof(GlobalLightingUBO));
-    model.bufferRange = sizeof(ModelUBO);
-    model.poolDescriptorCount = getRenderer()->getSwapChainimagesSize();
-    addUniformBufferBuildData(model);
-    */
-
     printf("model oncreate1!\n");
     LoadModelIndexed();
     printf("model oncreate2!\n");
@@ -161,14 +119,6 @@ void Model::Update(
     modelUniform.lightColor[1] = color[1];
     modelUniform.lightPos[2] = position[2];
     modelUniform.lightColor[2] = color[2];
-    /*
-    std::cout << "viewbol posX " << view[0] << std::endl;
-    std::cout << "viewbol posY " << view[1] << std::endl;
-    std::cout << "viewbol posZ " << view[2] << std::endl;
-    std::cout << "viewbol colorX " << view[4] << std::endl;
-    std::cout << "viewbol colorY " << view[5] << std::endl;
-    std::cout << "viewbol colorZ " << view[6] << std::endl;
-    */
 
     m_renderer->updateUniformBuffer(
         &modelUniform,
@@ -176,19 +126,4 @@ void Model::Update(
         m_uboBuildData[0].bufferOffset,
         m_uboBuildData[0].bufferRange
     );
-
-   /*
-    m_renderer->updateUniformBuffer(
-        &cameraUbo,
-        m_uniformBufferMemoryMap,
-        m_uboBuildData[0].bufferOffset,
-        m_uboBuildData[0].bufferRange
-    );
-    m_renderer->updateUniformBuffer(
-        &modelUbo,
-        m_uniformBufferMemoryMap,
-        m_uboBuildData[3].bufferOffset,
-        m_uboBuildData[3].bufferRange
-    );
-    */
 }

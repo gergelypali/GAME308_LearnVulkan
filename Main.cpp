@@ -22,12 +22,6 @@ void operator delete(void* memoryLocation, std::size_t amount) {
 using namespace MATH;
  
 int main(int argc, char* args[]) {
-/***	
-#pragma warning(disable : 4996) 
-	if (const char* env_p = std::getenv("PATH")) {
-		std::cout << "Your PATH is: " << env_p << '\n';
-	}
-***/
 	std::string name = { "Graphics Game Engine" };
 	std::cout << total << std::endl;
 	Debug::DebugInit(name + "_Log");

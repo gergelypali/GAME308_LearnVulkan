@@ -8,8 +8,6 @@ VulkanRenderer::VulkanRenderer(): /// Initialize all the variables
 VulkanRenderer::~VulkanRenderer() {}
 
 bool VulkanRenderer::OnCreate(){ 
-    //mario = std::make_unique<Model>("./meshes/Mario.obj");
-
     DH = std::make_unique<DeviceHandler>();
     DH->CreateWindow("VULKANIsVeryNice", 1280, 720);
     window = DH->GetWindow();
@@ -20,7 +18,6 @@ bool VulkanRenderer::OnCreate(){
 
 void VulkanRenderer::OnDestroy() {
     vkDeviceWaitIdle(device); /// Wait for all commands to clear
-    //light1->cleanUp();
     cleanup();
 }
 
@@ -38,9 +35,6 @@ void VulkanRenderer::Render() {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    //updateUniformBuffer(imageIndex);
-    //light1->Update(imageIndex);
-
     if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
@@ -57,8 +51,6 @@ void VulkanRenderer::Render() {
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-    //submitInfo.commandBufferCount = m_commandBuffers[imageIndex].size();
-    //submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex][0];
 
     VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
@@ -123,10 +115,6 @@ void VulkanRenderer::initVulkan() {
     createSwapChain();
     createImageViews();
     createRenderPass();
-    //createDescriptorSetLayout();
-    //CreateGraphicsPipeline();
-    std::cout << "initVulkan5" << std::endl;
-    //light1 = std::make_unique<PointLight>(device, renderPass, swapChainImages.size(), this);
     std::cout << "initVulkan6" << std::endl;
     createCommandPool();
     std::cout << "initVulkan7" << std::endl;
@@ -134,28 +122,10 @@ void VulkanRenderer::initVulkan() {
     std::cout << "initVulkan8" << std::endl;
     createFramebuffers();
     std::cout << "initVulkan9" << std::endl;
-    //CreateTextureImage();
-    std::cout << "initVulkan10" << std::endl;
-    //createTextureImageView();
-    std::cout << "initVulkan11" << std::endl;
     createTextureSampler();
-    std::cout << "initVulkan12" << std::endl;
-    //mario->LoadModelIndexed();
-    std::cout << "initVulkan13" << std::endl;
-    //createVertexBuffer(mario->GetVertices());
-    std::cout << "initVulkan14" << std::endl;
-    //createIndexBuffer(mario->GetIndices());
-    std::cout << "initVulkan15" << std::endl;
-    //createUniformBuffers();
-    std::cout << "initVulkan16" << std::endl;
-    //createDescriptorPool();
-    std::cout << "initVulkan17" << std::endl;
-    //createDescriptorSets();
-    std::cout << "initVulkan18" << std::endl;
-    //createCommandBuffers();
-    std::cout << "initVulkan19" << std::endl;
+    std::cout << "initVulkan10" << std::endl;
     createSyncObjects();
-    std::cout << "initVulkan20" << std::endl;
+    std::cout << "initVulkan11" << std::endl;
 }
 
 void VulkanRenderer::cleanupSwapChain() {
@@ -478,25 +448,11 @@ void VulkanRenderer::CreateGraphicsPipeline() {
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
-    /*
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainExtent;
-    */
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
-    //viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
-    //viewportState.pScissors = &scissor;
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -655,25 +611,11 @@ void VulkanRenderer::CreateGraphicsPipeline(
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
-    /*
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainExtent;
-    */
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
-    //viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
-    //viewportState.pScissors = &scissor;
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1492,38 +1434,8 @@ void VulkanRenderer::createCommandBuffers() {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
-        //vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-        /*
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-        // because viewport and scissor are dynamic we have to define them here
-        VkViewport viewPort{};
-        viewPort.x = 0.0f;
-        viewPort.y = 0.0f;
-        viewPort.width = static_cast<float>(swapChainExtent.width);
-        viewPort.height = static_cast<float>(swapChainExtent.height);
-        viewPort.minDepth = 0.0f;
-        viewPort.maxDepth = 1.0f;
-        vkCmdSetViewport(commandBuffers[i], 0, 1, &viewPort);
-
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = swapChainExtent;
-        vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
-
-        VkBuffer vertexBuffers[] = { vertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-        vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-
-        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mario->GetIndices().size()), 1, 0, 0, 0);
-        */
-        // load all of the models/lights
         printf("createCommandBuffers6\n");
         std::cout << "size of commandBuffer " << m_commandBuffers[i].size() << std::endl;
         vkCmdExecuteCommands(commandBuffers[i], m_commandBuffers[i].size(), m_commandBuffers[i].data());
@@ -1534,7 +1446,6 @@ void VulkanRenderer::createCommandBuffers() {
         if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to record command buffer!");
         }
-        //m_commandBuffers[i].push_back(commandBuffers[i]);
         printf("createCommandBuffers99\n");
     }
     printf("createCommandBuffers100\n");

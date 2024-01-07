@@ -5,16 +5,6 @@ layout(location = 0) in vec2 fragOffset;
 
 layout(location = 0) out vec4 outColor;
 
-//layout(binding = 0) uniform pointLightData {
-//    vec4 position;
-//    vec4 color;
-//} lightData;
-
-//layout(binding = 1) uniform CameraUBO {
-//    mat4 viewMatrix;
-//    mat4 projectionMatrix;
-//} camera;
-
 layout(binding = 0) uniform name
 {
     vec4 position;
@@ -34,5 +24,4 @@ void main() {
         discard;
     }
     outColor = PushConstants.color;
-    //outColor = vec4(0,0,1,0);
 }

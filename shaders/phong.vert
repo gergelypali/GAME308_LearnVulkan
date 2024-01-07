@@ -16,20 +16,6 @@ layout(binding = 0) uniform name
 } modelUboData;
 
 layout(binding = 1) uniform sampler2D texSampler;
-//layout(binding = 0) uniform CameraUBO {
-//    mat4 viewMatrix;
-//    mat4 projectionMatrix;
-//} camera;
-
-//layout(binding = 1) uniform GlobalLightingUBO {
-//    vec4 position;
-//    vec4 diffuse;
-//} glights;
-
-//layout(binding = 3) uniform ModelUBO {
-//	mat4 modelMatrix;
-//	mat4 normalMatrix;
-//} model;
 
 layout (location = 0) out vec3 vertPos;
 layout (location = 1) out vec3 normalInterp;

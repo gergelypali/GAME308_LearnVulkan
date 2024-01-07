@@ -119,10 +119,6 @@ void Scene0::Update(const float deltaTime) {
 	lightPos[1].y = 2.f * cosf(rad + 2.05);
 	lightPos[2].x = 2.f * sinf(rad + 4.1);
 	lightPos[2].y = 2.f * cosf(rad + 4.1);
-
-	//mariosModelMatrix.print();
-	//camera->GetViewMatrix().print();
-	//camera->GetProjectionMatrix().print();
 }
 
 void Scene0::Render() const {
@@ -133,14 +129,9 @@ void Scene0::Render() const {
 		VulkanRenderer* vRenderer;
 		vRenderer = dynamic_cast<VulkanRenderer*>(renderer);
 		camera->UpdateViewMatrix();
-		//camera->GetViewMatrix().print();
-		//camera->GetProjectionMatrix().print();
 		light1->Update(lightPos[0], camera->GetViewMatrix(), camera->GetProjectionMatrix());
 		light2->Update(lightPos[1], camera->GetViewMatrix(), camera->GetProjectionMatrix());
 		light3->Update(lightPos[2], camera->GetViewMatrix(), camera->GetProjectionMatrix());
-		//vRenderer->SetCameraUBO(camera->GetViewMatrix(), camera->GetProjectionMatrix());
-		//vRenderer->SetGlobalLightingUBO(lightPos, Vec4{ 0.1f, 0.1f, 0.1f, 0 });
-		//vRenderer->SetModelUBO(mariosModelMatrix, MATH::MMath::inverse(MATH::MMath::transpose(mariosModelMatrix)));
 		mario->Update(mariosModelMatrix, MATH::MMath::inverse(MATH::MMath::transpose(mariosModelMatrix)), camera->GetViewMatrix(), camera->GetProjectionMatrix(), lightPos, lightColor);
 		skull1->Update(skull1ModelMatrix, MATH::MMath::inverse(MATH::MMath::transpose(skull1ModelMatrix)), camera->GetViewMatrix(), camera->GetProjectionMatrix(), lightPos, lightColor);
 		skull2->Update(skull2ModelMatrix, MATH::MMath::inverse(MATH::MMath::transpose(skull2ModelMatrix)), camera->GetViewMatrix(), camera->GetProjectionMatrix(), lightPos, lightColor);
@@ -150,68 +141,4 @@ void Scene0::Render() const {
 	}
 }
 
-void Scene0::OnDestroy() {
-	printf("scene0_OnDestroy1\n");
-	//light1->OnDestroy();
-	printf("scene0_OnDestroy2\n");
-}
-
-
-
-/*
-
-	//vec4 ks = glights.diffuse;
-	//vec4 kd = glights.diffuse;
-	vec4 ks = vec4(0.1, 0.1, 0.1, 0);
-	vec4 kd = vec4(0.1, 0.1, 0.1, 0);
-	vec4 kt = texture(texSampler,fragTexCoords);
-	vec4 ka = 0.01 * kt;
-	
-	float diff = max(dot(vertNormal, lightDir), 0.0);
-
-	/// Reflection is based incedent beam of light which means a vector 
-	/// from the light source not the direction to the light source. 
-	/// Put a minus sign on light dir to turn it in the opposite direction. 
-	vec3 reflection = normalize(reflect(-lightDir, vertNormal));
-
-	float spec = max(dot(eyeDir, reflection), 0.0);
-	spec = pow(spec,14.0);
-	
-	fragColor = ka;
-	fragColor +=  diff * (kt + kd) + spec * ks;
-	//fragColor *= vec4(1,0,1,0);
-	fragColor = kt;
-
-
-
-
-
-
-	vec3 vertexWorldPos = mat3(bigHuge.model) * vVertex.xyz;
-
-	fragTexCoords = texCoords;
-	mat4 modelM = mat4(
-				-1.0, 0.0, 0.0, 0.0,  // 1. column
-				0.0, 1.0, 0.0, 0.0,  // 2. column
-				0.0, 0.0, -1.0, 0.0,  // 3. column
-				0.0, 0.0, 0.0, 1.0); // 4. column
-	mat4 view = mat4(
-				1.0, 0.0, 0.0, 0.0,  // 1. column
-				0.0, 1.0, 0.0, 0.0,  // 2. column
-				0.0, 0.0, 1.0, 0.0,  // 3. column
-				0.0, 0.0, -5.0, 1.0); // 4. column
-	mat4 proj = mat4(
-				1.3, 0.0, 0.0, 0.0,  // 1. column
-				0.0, 2.4, 0.0, 0.0,  // 2. column
-				0.0, 0.0, -1.0, -1.0,  // 3. column
-				0.0, 0.0, -1.0, 0.0); // 4. column
-	vertNormal = normalize(mat3(bigHuge.normal) * vNormal.xyz); /// Rotate the normal to the correct orientation 
-	vec3 vertPos = vec3(bigHuge.viewMatrix * bigHuge.model) * vVertex.xyz; /// This is the position of the vertex from the origin
-	vec3 vertDir = normalize(vertPos);
-	eyeDir = -vertDir;
-	lightDir = normalize(bigHuge.position.xyz - vertexWorldPos.xyz); /// Create the light direction.
-	
-	gl_Position =  bigHuge.projectionMatrix * bigHuge.viewMatrix * bigHuge.model * vec4(vVertex, 1.f);
-	//gl_Position =  proj * view * modelM * vec4(vVertex, 1.f);
-	gl_Position.y *= -1.f;
-*/
+void Scene0::OnDestroy() {}

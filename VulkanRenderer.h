@@ -70,7 +70,6 @@ public:
 
     std::unique_ptr<PointLight> light1{ nullptr };
 
-    // we need these functions to be public for the "actor" classes
     inline uint32_t getSwapChainimagesSize() { return static_cast<uint32_t>(swapChainImages.size()); };
     inline VkSampler getImageSampler() { return textureSampler; };
     VkDescriptorImageInfo getImageInfoDescriptor();
@@ -186,7 +185,6 @@ void createBufferForModel(
 private:
     const size_t MAX_FRAMES_IN_FLIGHT = 2;
 
-    // model data storing
     std::unique_ptr<Model> mario{ nullptr };
     std::unique_ptr<DeviceHandler> DH{ nullptr };
 
@@ -230,9 +228,6 @@ private:
     size_t currentFrame = 0;
 
     bool framebufferResized = false;
-
-    
-    
 
     bool hasStencilComponent(VkFormat format);
 

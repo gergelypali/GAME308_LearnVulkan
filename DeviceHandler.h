@@ -11,11 +11,9 @@
 class DeviceHandler
 {
 private:
-	// maybe here?
 	bool m_enableValidationLayers{ true };
 	VkDebugUtilsMessengerEXT m_debugMessenger;
 
-	// these are for sure
 	SDL_Window* m_window;
 	VkSurfaceKHR m_surface;
 	VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;

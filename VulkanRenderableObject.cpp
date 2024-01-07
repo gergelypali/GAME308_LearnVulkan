@@ -36,11 +36,7 @@ void VulkanRenderableObject::OnDestroy()
 }
 
 void VulkanRenderableObject::Update()
-{
-    // set new data to be that
-    // need one update uniform buffer
-    // that means copy the new data to the GPU
-}
+{}
 
 void VulkanRenderableObject::defineDescriptorSetLayoutBindingsAndDescriptorPool()
 {
