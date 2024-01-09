@@ -7,6 +7,10 @@ We were provided a sample code, that we had to use to add our assignments into i
 + Use push constants to transfer data to the shaders
 + Use Uniform Buffers to transfer bulk data to the shaders
 
+<picture>
+  <img alt="Demo video." src="https://github.com/gergelypali/GAME308_LearnVulkan/blob/master/demoVid/demoVideo.gif">
+</picture><br />
+
 The sample code was based on the tutorial from this page: https://vulkan-tutorial.com/Introduction<br />
 
 ### Additional tasks on top of the assignments
